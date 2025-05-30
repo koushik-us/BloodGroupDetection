@@ -5,37 +5,22 @@ import cv2
 import os
 import ssl
 from werkzeug.utils import secure_filename
-from PIL import Image  # Add this import
-from flask_cors import CORS
+from tensorflow.keras.preprocessing.image import load_img, img_to_array, save_img
 
-# WARNING: Not recommended for production
+# Disable SSL verification for downloading pre-trained models, if needed
 ssl._create_default_https_context = ssl._create_unverified_context
 
 app = Flask(__name__)
-CORS(app)  # Add this if you need cross-origin requests
-
-# Add at the top with other configurations
-MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB limit
-
-app.config['MAX_CONTENT_LENGTH'] = MAX_CONTENT_LENGTH
 
 # Load the pre-trained model
-try:
-    model = tf.keras.models.load_model('./model/model.h5')
-except Exception as e:
-    print(f"Error loading model: {e}")
-    model = None
+model = tf.keras.models.load_model('./model/model.h5')
 
 # Define the allowed extensions for uploaded files
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg','bmp'}
 
 # Function to check allowed file extensions
-def allowed_file(filename, file):  # Add file parameter
-    allowed_mimes = {'image/jpeg', 'image/png', 'image/bmp'}
-    file_type = file.content_type
-    return ('.' in filename and 
-            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS and
-            file_type in allowed_mimes)
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 def preprocess_image(file_path):
     """
@@ -47,19 +32,10 @@ def preprocess_image(file_path):
     Returns:
         numpy.ndarray: Preprocessed image ready for prediction.
     """
-    if not os.path.exists(file_path):
-        raise FileNotFoundError(f"File {file_path} not found")
-    
-    # Load and preprocess using PIL
-    img = Image.open(file_path)
-    img = img.resize((64, 64))  # Resize to match model's input size
-    img_array = np.array(img)
+    # Load the image
+    img = load_img(file_path, target_size=(64, 64))  # Resize to match the model's input size
+    img_array = img_to_array(img)  # Convert image to array
     img_array = np.expand_dims(img_array, axis=0)  # Add batch dimension
-
-    # Add validation
-    if img_array.shape != (1, 64, 64, 3):
-        raise ValueError("Invalid image dimensions after preprocessing")
-    
     return img_array
 
 
@@ -70,9 +46,6 @@ def home():
 # Endpoint to predict the blood group from fingerprint image
 @app.route('/predict', methods=['POST'])
 def predict():
-    if model is None:
-        return jsonify({'error': 'Model not loaded properly'}), 500
-    
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
 
@@ -81,7 +54,7 @@ def predict():
     if file.filename == '':
         return jsonify({'error': 'No file selected'}), 400
 
-    if not allowed_file(file.filename, file):  # Pass both filename and file
+    if not allowed_file(file.filename):
         return jsonify({'error': 'Invalid file type. Allowed types are png, jpg, jpeg'}), 400
 
     # Save the uploaded file
@@ -92,9 +65,6 @@ def predict():
     try:
         # Preprocess the image
         img = preprocess_image(file_path)
-
-        if img is None:
-            return jsonify({'error': 'Error preprocessing image'}), 500
 
         # Perform prediction
         predictions = model.predict(img)
@@ -123,5 +93,4 @@ def predict():
 if __name__ == '__main__':
     if not os.path.exists('uploads'):
         os.makedirs('uploads')
-    # Change debug=False for production
-    app.run(host='0.0.0.0', port=5000, debug=False)
+    app.run(debug=True)
