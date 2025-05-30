@@ -1,37 +1,57 @@
-# Blood Group Detection From Fingerprint
+# Blood Group Detection Using Fingerprint
 
-This project named as Blood Group Detection From Fingerprint,used to detect blood group from finger print, is a web app whose backend host a  trained model  and runs in flask. You can run this project on your local machine as well as on cloud very easily.
+An AI-powered web application that predicts blood groups from fingerprint images using deep learning.
 
+## 🚀 Features
+- Upload and process fingerprint images
+- Real-time blood group prediction
+- Confidence score visualization
+- Modern, responsive user interface
+- Secure file handling
 
+## 💻 Tech Stack
+- Python 3.8+
+- Flask 3.0.3
+- TensorFlow 2.16.1
+- OpenCV 4.10.0
+- Pandas 2.2.2
+- NumPy
+- HTML/CSS/JavaScript
 
-# Environment Setup
+## 🛠️ Installation
 
-Make sure Anaconda is installed and launch anaconda prompt and navigate to root directory in the anaconda prompt
-
-create venv
-
-```shell
-conda create -n "detect-blood-grp" python=3.10
+1. Clone the repository:
+```bash
+git clone https://github.com/koushik-us/BloodGroupDetection.git
+cd BloodGroupDetection
 ```
 
-Activate
-
-```shell
-conda activate detect-blood-grp 
-```
-
-In order to set your environment up to run the code here, first install all requirements:
-
-```shell
+2. Install dependencies:
+```bash
 pip install -r requirements.txt
 ```
 
-run the app.py file 
-
-```shell
+3. Run the application:
+```bash
 python app.py
 ```
 
-Once you see this url - http://127.0.0.1:5000/ in logs, open it in browser.
+4. Open http://localhost:5000 in your browser
 
-Now your setup is ready.
+## 📁 Project Structure
+```
+BloodGroupDetection/
+│
+├── app.py              # Main Flask application
+├── requirements.txt    # Project dependencies
+├── model/             # Trained model files
+├── templates/         # HTML templates
+├── static/           # CSS, JS, images
+└── dataset/          # Training dataset
+```
+
+## 📝 License
+MIT
+
+## 🤝 Contributing
+Contributions, issues, and feature requests are welcome!
